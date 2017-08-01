@@ -8,6 +8,7 @@ var snakeHeadArray = [
         './build/img/head2.png',
         './build/img/head3.png'
     ];
+
 var player = {
         x: 64,
         y: 64,
@@ -15,21 +16,17 @@ var player = {
         direction: 'down'
     };
 
+var apple = {
+        x: 128,
+        y: 128
+    };
+
 var puzzleSize = 32;
 var score = 0;
 var keyDown = false;
 var headTooHigh = false;
-
 var keyClick = {};
-document.addEventListener('keydown', function(event) {
-    moveMouth();
-    snakeHead.src = getSnakeHead(player.headPosition);
-    if(!keyDown) {
-        keyClick[event.keyCode] = true;
-        move(keyClick);
-        keyDown = true;
-    }
-}, false);
+var appleVisible = false;
 
 function moveMouth() {
     if(!headTooHigh) {
@@ -41,6 +38,16 @@ function moveMouth() {
     }
 }
 
+document.addEventListener('keydown', function(event) {
+    moveMouth();
+    snakeHead.src = getSnakeHead(player.headPosition);
+    if(!keyDown) {
+        keyClick[event.keyCode] = true;
+        move(keyClick);
+        keyDown = true;
+    }
+}, false);
+
 document.addEventListener('keyup', function(event) {
     delete keyClick[event.keyCode];
     keyDown = false;
@@ -50,6 +57,11 @@ var snakeHead = new Image();
     snakeHead.ready = false;
     snakeHead.onload = checkReady;
     snakeHead.src = getSnakeHead(player.headPosition);
+
+var redApple = new Image();
+    redApple.ready = false;
+    redApple.onload = checkReady;
+    redApple.src = './build/img/red.png';
 
 function move(key) {
     if(37 in key) {
@@ -90,11 +102,32 @@ function checkReady() {
 
 function playgame() {
     render();
+    requestAnimationFrame(playgame);
 }
 
 function render() {
     context.fillStyle = '#d3d3d3';
     context.fillRect(0, 0, canvas.width, canvas.height);
+
+    context.font = '20px Verdana';
+    context.fillStyle = 'black';
+    context.fillText(`Score: ${score}`, 0, 20);
+    
+    if(appleVisible === false) {
+        apple.x = randomNumGenerator(19) * puzzleSize;
+        apple.y = randomNumGenerator(19) * puzzleSize;
+        console.log('rysuje jakblo');
+        appleVisible = true;
+    }
+
+    context.drawImage(
+        redApple,
+        apple.x,
+        apple.y,
+        puzzleSize,
+        puzzleSize
+    );
+
     context.drawImage(
         snakeHead,
         player.x,
@@ -102,9 +135,10 @@ function render() {
         puzzleSize,
         puzzleSize
     );
-    context.font = '20px Verdana';
-    context.fillStyle = 'black';
-    context.fillText(`Score: ${score}`, 0, 20);
+}
+
+function randomNumGenerator(n) {
+    return Math.floor(Math.random() * n) + 1;
 }
 
 document.body.appendChild(canvas);
