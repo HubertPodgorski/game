@@ -1,0 +1,15 @@
+@import '../helpers/colors';
+
+body, html {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: $bg-color;
+    color: $white;
+}
+
+canvas {
+    border: solid 1px #000;
+}
