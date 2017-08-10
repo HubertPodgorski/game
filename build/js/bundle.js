@@ -7753,12 +7753,12 @@ var snake = {
     y: 64,
     head: 0,
     direction: 'right',
-    speed: 4,
-    length: 1,
+    speed: 200,
+    length: 3,
     level: 1,
-    velocity: 4
+    velocity: 10,
+    array: []
 };
-
 var mouthInterval;
 var apple = {
     x: 32,
@@ -7767,22 +7767,6 @@ var apple = {
     count: 0,
     visible: false
 };
-
-var border = {
-    x: 0,
-    y: 0,
-    src: 'corner',
-    ready: false,
-    count: 0
-};
-
-var grass = {
-    x: puzzleSize,
-    y: puzzleSize,
-    src: 1,
-    ready: 0
-};
-
 var score = 0;
 var keyDown = false;
 var headTooHigh = false;
@@ -7815,16 +7799,6 @@ appleGolden.ready = false;
 appleGolden.onload = checkReady;
 appleGolden.src = './build/img/appleGolden.png';
 
-var borderImg = new Image();
-borderImg.ready = false;
-borderImg.onload = checkReady;
-borderImg.src = './build/img/border/border' + border.src + '.png';
-
-var grassImg = new Image();
-grassImg.ready = false;
-grassImg.onload = checkReady;
-grassImg.src = './build/img/grass/grass' + grass.src + '.png';
-
 document.addEventListener('keydown', function (event) {
     if (!keyDown) {
         keyClick[event.keyCode] = true;
@@ -7838,46 +7812,30 @@ document.addEventListener('keyup', function (event) {
     keyDown = false;
 }, false);
 
-function borderImgChange() {
-    borderImg.src = './build/img/border/border' + border.src + '.png';
-}
-
-function grassImgChange() {
-    grassImg.src = './build/img/grass/grass' + grass.src + '.png';
-}
-
 function changeDirection(key) {
     clearInterval(mouthInterval);
     if (37 in key) {
         if (snake.x >= 2 * puzzleSize) {
             snake.direction = 'left';
-            mouthInterval = setInterval(function () {
-                moveMouth();
-            }, 2000 / snake.speed);
+            // mouthInterval = setInterval(function(){ moveMouth()}, snake.speed);
         }
     }
     if (38 in key) {
         if (snake.y >= 2 * puzzleSize) {
             snake.direction = 'top';
-            mouthInterval = setInterval(function () {
-                moveMouth();
-            }, 2000 / snake.speed);
+            // mouthInterval = setInterval(function(){ moveMouth()}, snake.speed);
         }
     }
     if (39 in key) {
         if (snake.x < canvas.width - 2 * puzzleSize) {
             snake.direction = 'right';
-            mouthInterval = setInterval(function () {
-                moveMouth();
-            }, 2000 / snake.speed);
+            // mouthInterval = setInterval(function(){ moveMouth()}, snake.speed);
         }
     }
     if (40 in key) {
         if (snake.y < canvas.height - 2 * puzzleSize) {
             snake.direction = 'down';
-            mouthInterval = setInterval(function () {
-                moveMouth();
-            }, 2000 / snake.speed);
+            // mouthInterval = setInterval(function(){ moveMouth()}, snake.speed);
         }
     }
     render();
@@ -7888,29 +7846,46 @@ function moveSnake() {
         if (snake.x < canvas.width - 2 * puzzleSize) {
             snake.x += puzzleSize;
         } else {
-            clearInterval(mouthInterval);
+            // clearInterval(mouthInterval);
         }
     } else if (snake.direction === 'down') {
         if (snake.y < canvas.height - 2 * puzzleSize) {
             snake.y += puzzleSize;
         } else {
-            clearInterval(mouthInterval);
+            // clearInterval(mouthInterval);
         }
     } else if (snake.direction === 'left') {
         if (snake.x > puzzleSize) {
             snake.x -= puzzleSize;
         } else {
-            clearInterval(mouthInterval);
+            // clearInterval(mouthInterval);
         }
     } else if (snake.direction === 'top') {
         if (snake.y > puzzleSize) {
             snake.y -= puzzleSize;
         } else {
-            clearInterval(mouthInterval);
+            // clearInterval(mouthInterval);
         }
     }
     render();
 }
+
+function prepareSnake() {
+    for (var i = snake.length; i > 0; i--) {
+        snake.array.push({
+            x: i * puzzleSize,
+            y: 2 * puzzleSize
+        });
+    }
+
+    console.log(snake.array);
+}
+
+function initiate() {
+    prepareSnake();
+}
+
+initiate();
 
 function checkReady() {
     this.ready = true;
@@ -7920,38 +7895,6 @@ function checkReady() {
 function playgame() {
     render();
     requestAnimationFrame(playgame);
-}
-
-function renderBorder() {
-    var j = 0;
-    for (var i = 0; i <= puzzleWidthAmount; i++) {
-        border.x = i * puzzleSize;
-        border.y = j;
-        if (border.x == 0 || border.x == canvas.width - puzzleCount) {
-            border.src = 'corner';
-            borderImgChange();
-        } else {
-            border.src = randomNumGenerator(6);
-            borderImgChange();
-        }
-
-        context.drawImage(borderImg, border.x, border.y, puzzleSize, puzzleSize);
-    }
-}
-
-function renderGrass() {
-    for (var i = 1; i <= puzzleWidthAmount - 2; i++) {
-        for (var j = 1; j <= puzzleHeightAmount - 2; j++) {
-            grass.x = i * puzzleSize;
-            grass.y = j * puzzleSize;
-            grass.src = randomNumGenerator(6);
-            grassImgChange();
-
-            console.log('rendering');
-
-            context.drawImage(grassImg, grass.x, grass.y, puzzleSize, puzzleSize);
-        }
-    }
 }
 
 function renderApple() {
@@ -7970,13 +7913,34 @@ function renderApple() {
 }
 
 function renderSnakeHead() {
-    if (snake.head <= 0) {
-        context.drawImage(snakeHead0, snake.x, snake.y, puzzleSize, puzzleSize);
-    } else if (snake.head >= 2) {
-        context.drawImage(snakeHead2, snake.x, snake.y, puzzleSize, puzzleSize);
-    } else {
-        context.drawImage(snakeHead1, snake.x, snake.y, puzzleSize, puzzleSize);
-    }
+    snake.array.forEach(function (bodyPos) {
+        context.drawImage(snakeHead0, bodyPos.x, bodyPos.y, puzzleSize, puzzleSize);
+    });
+    // if(snake.head <= 0) {
+    //     context.drawImage(
+    //         snakeHead0,
+    //         snake.x,
+    //         snake.y,
+    //         puzzleSize,
+    //         puzzleSize
+    //     );
+    // } else if(snake.head >= 2) {
+    //     context.drawImage(
+    //         snakeHead2,
+    //         snake.x,
+    //         snake.y,
+    //         puzzleSize,
+    //         puzzleSize
+    //     );
+    // } else {
+    //     context.drawImage(
+    //         snakeHead1,
+    //         snake.x,
+    //         snake.y,
+    //         puzzleSize,
+    //         puzzleSize
+    //     );
+    // }
 }
 
 function moveMouth() {
@@ -7995,31 +7959,26 @@ function render() {
     context.fillStyle = '#d3d3d3';
     context.fillRect(puzzleSize, puzzleSize, canvas.width - 2 * puzzleSize, canvas.height - 2 * puzzleSize);
 
-    if (!grass.ready) {
-        renderGrass();
-        grass.ready = 1;
-    }
-
     context.font = '20px Verdana';
     context.fillStyle = 'black';
     context.fillText('Score: ' + score, puzzleSize, canvas.height - puzzleSize);
     context.fillText('Level: ' + snake.level, puzzleSize * 5, canvas.height - puzzleSize);
     context.fillText('Speed: ' + snake.speed, puzzleSize * 10, canvas.height - puzzleSize);
 
-    //Collision
+    //Apple Collision
 
     if (snake.x === apple.x && snake.y === apple.y) {
         if (apple.type == 'red') {
             score += 100 * snake.level;
+            snake.length++;
         } else if (apple.type == 'golden') {
             score += 250 * snake.level;
-            snake.speed += snake.velocity;
+            snake.speed -= snake.velocity;
             snake.level++;
+            snake.length++;
         }
         apple.visible = false;
     }
-
-    ///
 
     renderApple();
 
@@ -8044,10 +8003,8 @@ function randomNumGenerator(n) {
     return Math.floor(Math.random() * n) + 1;
 }
 
-var snakeInterval = setInterval(moveSnake, 3000 / (snake.speed * snake.speed));
-mouthInterval = setInterval(function () {
-    moveMouth();
-}, 2000 / snake.speed);
+var snakeInterval = setInterval(moveSnake, snake.speed);
+// mouthInterval = setInterval(function(){ moveMouth()},snake.speed);
 
 document.body.appendChild(canvas);
 
